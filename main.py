@@ -2,6 +2,8 @@ import numpy as np
 import cv2
 from envs.simple_env  import *
 from utilities.utils import *
+#from pursuer.planner.planner import *
+
 
 #make test map 
 def create_test_map():
@@ -11,11 +13,11 @@ def create_test_map():
     return grid
 
 def main():
-    # パラメータ設定（YAMLは若rん）
+    # パラメータ設定（YAMLは分からん）
     grid = np.ones((100, 100), dtype=np.uint8)
     cv2.rectangle(grid, (40, 40), (75, 75), 0, -1)
     psi = np.pi / 2
-    radius = 60
+    radius = 50
     tau = 0.5
 
     env = SimpleEnv(grid, psi, radius, tau)

@@ -18,8 +18,7 @@ cv2.rectangle(grid,(40,40),(75,75),0,-1)
 global_map = grid
 
 def display2map(map_origin, ratio, x_d):
-    if len(x_d) == 2:
-        x_d = np.array([[1, 0], [0, 1], [0, 0]]) @ x_d
+    
     d2m = np.array([[0, 1 / ratio, 0],
                     [-1 / ratio, 0, 0],
                     [0, 0, 1]])
@@ -60,11 +59,29 @@ def DDA(x0,y0,x1,y1):
 
     for i in range(steps): ## what is global_map??
         if 0 < int(x)< len(global_map) and 0 < int(y) < len(global_map[0]):
-            if global_map[int(x)][int(y)] == 0:
+            if global_map[int(y)][int(x)] == 0:
                 break ## if the point is not occupied
         x += xinc
         y += yinc
     return int(x)+1, int(y)+1
+
+# def DDA(x0, y0, x1, y1):
+#     dx, dy = x1 - x0, y1 - y0
+#     steps = int(max(abs(dx), abs(dy)))
+#     if steps == 0:                             # 同一点クリック対策
+#         return x0, y0
+
+#     xinc, yinc = dx/steps, dy/steps
+#     x, y = float(x0), float(y0)
+
+#     for _ in range(steps):
+#         row, col = int(round(x)), int(round(y))     # ← **行(row)=y, 列(col)=x**
+#         if 0 <= row < len(global_map) and 0 <= col < len(global_map[0]):
+#             if grid[row, col] == 0:                 # 黒セル命中
+#                 return col, row                     # 直前のセルを返す
+#         x += xinc
+#         y += yinc
+#     return int(round(x)), int(round(y))
 
 ##scope of FoV
 def SDF_RT(robot_pose, fov, radius, RT_res, grid, inner_r=10):
