@@ -20,8 +20,11 @@ class SimpleEnv:
         self._tau = tau
         self._rbt = np.array([30, 30, 0.0])
         self._tgt = np.array([80, 80, 0.0])
-        self.map_ratio = 2
-        self.map_origin = np.array([[grid.shape[0] // 2], [grid.shape[1] // 2], [np.pi / 2]])
+        self.map_ratio = 1
+        #self.map_origin = np.array([[grid.shape[0]], [grid.shape[1] // 2], [np.pi / 2]])
+        self.map_origin = np.array([[grid.shape[1]],   
+                            [0],    
+                            [0]])
         self._video_writer = None
         self.reset()
 
@@ -40,24 +43,25 @@ class SimpleEnv:
     def get_visible_region(self):
         rbt_d = map2display(self.map_origin, self.map_ratio, self._rbt.reshape((3, 1))).squeeze()
         rt_visible = SDF_RT(rbt_d, self._psi, self._radius, 50, self._global_map)
-        visible_region = (display2map(self.map_origin, self.map_ratio, rt_visible.T)[0:2, :]).T
-        return visible_region
+        return rt_visible
     
     def sdf(self):
         visible_region = self.get_visible_region()
         return polygon_SDF(visible_region,self._tgt[0:2])
     
-    def cv_render(self,save_path=None):
-        visible_region = self.get_visible_region()
-        canvas = cv2.cvtColor((self._global_map * 225).astype(np.uint8), cv2.COLOR_GRAY2BGR)
-        
-        ## draw visible region
-        poly = visible_region.astype(np.int32)
-        cv2.polylines(canvas, [poly.reshape(-1, 1, 2)], True, (0, 255, 255), 1)
+    def cv_render(self, save_path=None):
+        canvas = cv2.cvtColor((self._global_map*225).astype(np.uint8), cv2.COLOR_GRAY2BGR)
 
-        ## draw target, robot
-        cv2.circle(canvas, tuple(self._tgt[0:2].astype(int)),2,(0,0,225),-1)
-        cv2.circle(canvas, tuple(self._rbt[0:2].astype(int)),2,(225,0,0),-1)
+        # --- FoV ポリゴン（display座標のまま）---
+        poly_disp = self.get_visible_region().astype(np.int32)
+        cv2.polylines(canvas, [poly_disp.reshape(-1,1,2)], True, (0,255,255), 1)
+
+        # --- ターゲット・ロボットを display 座標に変換して描く ---
+        tgt_d = map2display(self.map_origin, self.map_ratio, self._tgt.reshape(3,1)).squeeze()
+        rbt_d = map2display(self.map_origin, self.map_ratio, self._rbt.reshape(3,1)).squeeze()
+        cv2.circle(canvas, (int(tgt_d[0]), int(tgt_d[1])), 2, (0,0,255), -1)
+        cv2.circle(canvas, (int(rbt_d[0]), int(rbt_d[1])), 2, (255,0,0), -1)
+        
 
         cv2.imshow("Simulation", canvas)
         cv2.waitKey(1)
@@ -71,7 +75,7 @@ class SimpleEnv:
             self._video_writer.release()
         cv2.destroyAllWindows()
     
-
+    
 
     # def render(self):
     #     vis_region = self.get_visible_region()
