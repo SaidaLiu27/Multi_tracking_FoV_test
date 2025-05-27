@@ -52,11 +52,9 @@ class SimpleEnv:
     def cv_render(self, save_path=None):
         canvas = cv2.cvtColor((self._global_map*225).astype(np.uint8), cv2.COLOR_GRAY2BGR)
 
-        # --- FoV ポリゴン（display座標のまま）---
         poly_disp = self.get_visible_region().astype(np.int32)
         cv2.polylines(canvas, [poly_disp.reshape(-1,1,2)], True, (0,255,255), 1)
 
-        # --- ターゲット・ロボットを display 座標に変換して描く ---
         tgt_d = map2display(self.map_origin, self.map_ratio, self._tgt.reshape(3,1)).squeeze()
         rbt_d = map2display(self.map_origin, self.map_ratio, self._rbt.reshape(3,1)).squeeze()
         cv2.circle(canvas, (int(tgt_d[0]), int(tgt_d[1])), 2, (0,0,255), -1)
