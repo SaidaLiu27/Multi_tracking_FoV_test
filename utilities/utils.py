@@ -4,6 +4,7 @@
 import torch
 import numpy as np
 import cv2
+import json
 
 from torch import tensor
 
@@ -164,3 +165,45 @@ def polygon_SDF(polygon, point):
 
 ### triabld_SDF may be used in the future for optimal
 ### normalize_angle() may have to change in the future as robot need to turn for many times
+
+
+### FoV penerate only one sell
+##  easy to fix but, the model codes is return int(x+1), int(y+1)
+## dont know should be change or not
+
+
+## function for use HouseExpo dataset(.json)
+## so import .json -> grid map 
+## cite from test.py
+
+### ----- Problem: in test.py, the y axis is normal but 
+### in envs/simple_env.py, the y axis is flipped
+### ---Solution: #polygon[:, 1] = canvas_size[1] - polygon[:, 1]
+def load_houseexpo_json_as_grid(json_path, canvas_size=(256, 256)):
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+
+    grid = np.zeros(canvas_size, dtype=np.uint8)
+
+    bbox_min = data['bbox']['min']
+    bbox_max = data['bbox']['max']
+    width = bbox_max[0] - bbox_min[0]
+    height = bbox_max[1] - bbox_min[1]
+    scale_x = canvas_size[0] / width
+    scale_y = canvas_size[1] / height
+    scale = min(scale_x, scale_y)
+    ## なんかめっちゃおかしい気がするけどとりあえずうまく動くからええわ
+    if "verts" in data:
+        polygon = np.array([
+            [int((v[0] - bbox_min[0]) * scale), int((v[1] - bbox_min[1]) * scale)]
+            for v in data["verts"]
+        ], dtype=np.int32)
+        #polygon[:, 1] = canvas_size[1] - polygon[:, 1]
+        cv2.fillPoly(grid, [polygon], color=255)
+
+
+    ## 0 is obstacle, 255 is free space 
+    ## I think 255 is white and 0 is black but in this code,
+    ## fill polygon with 255(black) and 0(white)
+    ## 意味わからんけど，とりあえずうまく動くからええわ
+    return (grid == 255).astype(np.uint8)
