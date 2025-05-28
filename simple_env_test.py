@@ -1,6 +1,5 @@
 ### cite from RL_active~
-
-####　ロボットの位置をmapの真ん中に配置したい．なんかいけた
+##　ちゃんと動く，なおかつロボットの向きとかもあってるやつ
 
 import torch
 import cv2
@@ -31,10 +30,8 @@ class SimpleEnv:
         self.reset()
 
     def reset(self):
-        height, width = grid.shape
-
-        self._rbt = np.array([int(width * 0.8), int(height * 0.8), -np.pi / 2])
-        self._tgt = np.array([int(width * 0.2), int(height * 0.2), 0.0])
+        self._rbt = np.array([0, 0, -np.pi/2])##30,80
+        self._tgt = np.array([0, 0, 0.0])##80,30
         height, width = self._global_map.shape
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         self._video_writer = cv2.VideoWriter('./output.mp4', fourcc, 10.0, (width, height))

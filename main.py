@@ -1,37 +1,29 @@
 import numpy as np
 import cv2
 from envs.simple_env  import *
+#from simple_env_test import *
 from utilities.utils import *
 #from pursuer.planner.planner import *
 
 
-#make test map 
-def create_test_map():
-    H, W = 100, 100
-    grid = np.ones((H, W), dtype=np.uint8)
-    cv2.rectangle(grid, (40, 40), (75, 75), 0, -1)
-    return grid
 
 def main():
-    # パラメータ設定（YAMLは分からん）
-    grid = np.ones((100, 100), dtype=np.uint8)
-    cv2.rectangle(grid, (40, 40), (75, 75), 0, -1)
+    ## use json for map
+    json_path = "0a1a5807d65749c1194ce1840354be39.json"
+    grid = load_houseexpo_json_as_grid(json_path, canvas_size=(256, 256))
+
     psi = np.pi / 2
     radius = 50
     tau = 0.5
-
     env = SimpleEnv(grid, psi, radius, tau)
-    ref_action = np.array([1.0, 0.0])  # 定速直進
 
-    for step in range(100):
+    ref_action = np.array([1.0, 0.0]) 
+    for _ in range(100):
         tgt, rbt = env.update(ref_action)
-        sdf_val = env.sdf()
-        print(f"[Step {step}] Target SDF: {sdf_val:.3f} {'[VISIBLE]' if sdf_val < 0 else '[OCCLUDED]'}")
-        
-        save_file = f"test_output.png"
-        env.cv_render(save_path=save_file)
+        env.cv_render()
 
-    cv2.destroyAllWindows()
+    env.close()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
+
